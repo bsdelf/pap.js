@@ -62,9 +62,14 @@ describe('PAP', () => {
         it('should stop on rejection', done => {
             const theError = new Error(k / 2);
 
+            let hit = false;
+
             PAP
-                .consume(genSeq(), k / 2, ({ data, resolve, reject }) => {
-                    if (data < k / 2) {
+                .consume(genSeq(), 2, ({ data, resolve, reject }) => {
+                    if (data > k / 2) {
+                        hit = true;
+                    }
+                    if (data !== k / 2) {
                         resolve(data);
                     } else {
                         reject(new Error(data));
@@ -72,6 +77,7 @@ describe('PAP', () => {
                 })
                 .catch(error => {
                     assert.strictEqual(error.toString(), theError.toString());
+                    assert.isFalse(hit);
                     done();
                 })
                 .catch(error => {

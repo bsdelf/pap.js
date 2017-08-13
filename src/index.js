@@ -5,7 +5,7 @@ module.exports.consume = function consume(queue, n, handler) {
 
     return Promise
         .all(Array(n).fill().map(() => makePromise()))
-        .then(value => [].concat(...value));
+        .then(results => [].concat(...results));
 
     function makePromise(results = []) {
         if (ok && queue.length > 0) {
@@ -14,16 +14,15 @@ module.exports.consume = function consume(queue, n, handler) {
                 handler({
                     data,
                     resolve: value => {
-                        results.push(value);
-                        resolve(makePromise(results));
+                        resolve(results.concat(value));
                     },
                     reject: error => {
                         ok = false;
                         reject(error);
                     }
                 });
-            });
+            }).then(value => makePromise(value));
         }
-        return Promise.resolve(results);
+        return results;
     }
 };
